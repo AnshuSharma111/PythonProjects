@@ -13,5 +13,5 @@ root.iconbitmap(ICON_PATH)
 root.title(TITLE)
 root.geometry(f"{screen_width}x{screen_height}")
 
-homeScreen(root)
+initialise(root)
 root.mainloop()

@@ -1,12 +1,19 @@
 import ttkbootstrap as ttk
 from ttkbootstrap.constants import *
+from tkinter import messagebox
 import random
 
-def clearFrame(frame):
+frame = None
+def initialise(root):
+    global frame
+    frame = root
+    homeScreen()
+
+def clearFrame():
     for widget in frame.winfo_children():
         widget.destroy()
 
-def submitProceed(l, u, t, frame):
+def submitProceed(l, u, t):
     lr = l.get()
     ur = u.get()
     tr = t.get()
@@ -25,39 +32,58 @@ def submitProceed(l, u, t, frame):
         tr = 10
 
     options = {"lower" : lr, "upper" : ur, "tries" : tr, "randomNumber" : random.randrange(lr, ur)}
-    playScreen(frame, options)
+    playScreen(options)
+
+def gameEnd(outcome, randNum):
+    if not outcome:
+        messagebox.showinfo("Lose", f"Game Over! The number was {randNum}")
+    else:
+        messagebox.showinfo("Won", f"Congratulations! You win!")
+    
+    homeScreen()
+    
 
 def check(userInp, actualVal, outputLabel, triesLeft):
     try:
         userInp = int(userInp)
         tl = int(triesLeft.cget("text")[13:])
+        won = False
 
+        triesLeft.config(text=f"Tries Left : {max(0,tl-1)}")
         if tl > 0:
             if userInp == actualVal:
                 outputLabel.config(text="Congratulations! You guessed right!")
+                won = True
+                triesLeft.config(text=f"Tries Left : {tl-1}")
+                tl -= 1
+                gameEnd(won, actualVal)
             elif userInp < actualVal:
                 outputLabel.config(text="You guessed lesser than the actual Number!")
             else:
                 outputLabel.config(text="You guessed higher than the actual Number!")
+
+            if tl == 1 and not won:
+                outputLabel.config(text="Congratulations! You guessed right!")
+                tl -= 1
+                gameEnd(False, actualVal)
         else:
             outputLabel.config(text = "Out of tries!")
-        triesLeft.config(text=f"Tries Left : {tl-1}")
     except:
         outputLabel.config(text="Please enter an integral value!")
     
 
-def homeScreen(frame):
-    clearFrame(frame)
+def homeScreen():
+    clearFrame()
 
     # Heading Label
     heading = ttk.Label(frame, text = "Random Number Guessing Game!", font=("Helvetica", 20))
     heading.pack(pady=20)
     # Play Button
-    playButton = ttk.Button(frame, bootstyle="dark", text="Play!", command= lambda : optionsScreen(frame))
+    playButton = ttk.Button(frame, bootstyle="dark", text="Play!", command= lambda : optionsScreen())
     playButton.pack(pady=50)
 
-def optionsScreen(frame):
-    clearFrame(frame)
+def optionsScreen():
+    clearFrame()
 
     # Heading Label
     heading = ttk.Label(frame, text = "Choose Settings", font=("Helvetica", 20))
@@ -87,11 +113,11 @@ def optionsScreen(frame):
     tries.pack(pady=10)
 
     #Submit and proceed
-    submitButton = ttk.Button(frame, bootstyle="dark", text="Proceed", command= lambda : submitProceed(lowerRange, upperRange, tries, frame))
+    submitButton = ttk.Button(frame, bootstyle="dark", text="Proceed", command= lambda : submitProceed(lowerRange, upperRange, tries))
     submitButton.pack(pady=50)
 
-def playScreen(frame, options):
-    clearFrame(frame)
+def playScreen(options):
+    clearFrame()
 
     print(options)
     # Heading
